@@ -92,8 +92,8 @@ const ImageForm = () => {
 const ErrorModal = ({ close }) => {
   const error = useSelector((state) => state.details.error);
 
-  const errMsg = error.includes(`'message': "`)
-    ? error.split(`'message': "`)[1].split('",')[0]
+  const errMsg = error?.includes(`'message': "`)
+    ? error?.split(`'message': "`)[1]?.split('",')[0]
     : error;
 
   return (

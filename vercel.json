@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://openai-api.karmalive.pro/$1"
+    }
+  ]
+}

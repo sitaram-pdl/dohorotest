@@ -13,6 +13,7 @@ const ImageForm = () => {
   const dispatch = useDispatch();
 
   const status = useSelector((state) => state.details.status);
+
   const openDetailModal = useSelector((state) => state.details.openDetailModal);
 
   const onSubmit = async () => {
@@ -54,7 +55,29 @@ const ImageForm = () => {
         )}
       </div>
       {openDetailModal ? <Modal close={onModalClose} /> : null}
+      {status === 'failed' ? <ErrorModal close={() => {}} /> : null}
     </form>
+  );
+};
+
+// eslint-disable-next-line react/prop-types
+const ErrorModal = ({ close }) => {
+  const error = useSelector((state) => state.details.error);
+
+  console.log(
+    error.includes(`'message': "`)
+      ? error.trim(`'message': "`)[1].trim('"')[0]
+      : error
+  );
+
+  return (
+    <div className='fixed z-10 top-0 left-0 w-full h-full flex items-center justify-center'>
+      <div
+        onClick={close}
+        className='absolute z-0 top-0 left-0 h-full w-full bg-black/60'
+      ></div>
+      <div className='bg-white z-10 rounded-lg p-8'>{error}</div>
+    </div>
   );
 };
 

@@ -11,6 +11,7 @@ export const extractDetails = createAsyncThunk(
       let detail = JSON.parse(response.data.processed_text);
       return { ...detail, id: imageUrl };
     } catch (error) {
+      console.log(error.response);
       return rejectWithValue(error.response.data.error || error);
     }
   }
@@ -36,12 +37,14 @@ const detailsSlice = createSlice({
     builder
       .addCase(extractDetails.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(extractDetails.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.details = action.payload;
         state.isThereDetails = true;
         state.openDetailModal = true;
+        state.error = null;
       })
       .addCase(extractDetails.rejected, (state, action) => {
         state.status = 'failed';

@@ -11,7 +11,6 @@ export const extractDetails = createAsyncThunk(
       let detail = JSON.parse(response.data.processed_text);
       return { ...detail, id: imageUrl };
     } catch (error) {
-      console.log(error.response);
       return rejectWithValue(error.response.data.error || error);
     }
   }
@@ -23,10 +22,14 @@ const detailsSlice = createSlice({
     status: null,
     error: null,
     openDetailModal: false,
+    openErrorModal: false,
   },
   reducers: {
     closeDetailModal: (state) => {
       state.openDetailModal = false;
+    },
+    closeErrorModal: (state) => {
+      state.openErrorModal = false;
     },
     viewDetails: (state, payload) => {
       state.details = payload.payload;
@@ -48,11 +51,12 @@ const detailsSlice = createSlice({
       })
       .addCase(extractDetails.rejected, (state, action) => {
         state.status = 'failed';
-        state.isThereDetails = false;
         state.error = action.payload;
+        state.openErrorModal = true;
       });
   },
 });
 
-export const { closeDetailModal, viewDetails } = detailsSlice.actions;
+export const { closeDetailModal, viewDetails, closeErrorModal } =
+  detailsSlice.actions;
 export default detailsSlice.reducer;

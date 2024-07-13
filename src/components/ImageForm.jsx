@@ -1,27 +1,47 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { extractDetails, closeDetailModal } from '../redux/DetailSlice';
+import {
+  extractDetails,
+  closeDetailModal,
+  closeErrorModal,
+} from '../redux/DetailSlice';
 import { addItemInTable } from '../redux/ItemSlice';
-
 import Details from './Details';
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import classNames from 'classnames';
+
+const schema = Yup.object().shape({
+  imageUrl: Yup.string().url('Invalid URL').required('Image URL is required'),
+});
 
 const ImageForm = () => {
-  const { handleSubmit } = useForm();
-  const [imageUrl, setImageUrl] = useState('');
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
   const dispatch = useDispatch();
 
   const status = useSelector((state) => state.details.status);
 
   const openDetailModal = useSelector((state) => state.details.openDetailModal);
+  const openErrorModal = useSelector((state) => state.details.openErrorModal);
 
-  const onSubmit = async () => {
-    dispatch(extractDetails(imageUrl));
+  const onSubmit = async (data) => {
+    dispatch(extractDetails(data.imageUrl));
   };
 
-  const onModalClose = () => {
+  const onDetailModalClose = () => {
     dispatch(closeDetailModal());
+  };
+
+  const onErrorModalClose = () => {
+    dispatch(closeErrorModal());
   };
 
   return (
@@ -37,10 +57,15 @@ const ImageForm = () => {
           id='imageUrl'
           name='imageUrl'
           type='url'
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          className={classNames(
+            'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline',
+            errors.imageUrl && 'border-red-700'
+          )}
+          {...register('imageUrl')}
         />
+        {errors.imageUrl && (
+          <span className='text-red-700'>{errors.imageUrl.message}</span>
+        )}
 
         <button
           type='submit'
@@ -50,12 +75,15 @@ const ImageForm = () => {
         </button>
       </div>
       <div className='h-56'>
-        {imageUrl && (
-          <img className='animate-fade-in h-[inherit]' src={imageUrl}></img>
+        {watch().imageUrl?.length > 6 && (
+          <img
+            className='animate-fade-in h-[inherit]'
+            src={watch()?.imageUrl}
+          ></img>
         )}
       </div>
-      {openDetailModal ? <Modal close={onModalClose} /> : null}
-      {status === 'failed' ? <ErrorModal close={() => {}} /> : null}
+      {openDetailModal ? <Modal close={onDetailModalClose} /> : null}
+      {openErrorModal ? <ErrorModal close={onErrorModalClose} /> : null}
     </form>
   );
 };
@@ -64,11 +92,9 @@ const ImageForm = () => {
 const ErrorModal = ({ close }) => {
   const error = useSelector((state) => state.details.error);
 
-  console.log(
-    error.includes(`'message': "`)
-      ? error.trim(`'message': "`)[1].trim('"')[0]
-      : error
-  );
+  const errMsg = error.includes(`'message': "`)
+    ? error.split(`'message': "`)[1].split('",')[0]
+    : error;
 
   return (
     <div className='fixed z-10 top-0 left-0 w-full h-full flex items-center justify-center'>
@@ -76,7 +102,7 @@ const ErrorModal = ({ close }) => {
         onClick={close}
         className='absolute z-0 top-0 left-0 h-full w-full bg-black/60'
       ></div>
-      <div className='bg-white z-10 rounded-lg p-8'>{error}</div>
+      <div className='bg-white z-10 rounded-lg p-8'>{errMsg}</div>
     </div>
   );
 };

@@ -8,7 +8,8 @@ export const extractDetails = createAsyncThunk(
       const response = await axios.post('/api/extract-details', {
         image_url: imageUrl,
       });
-      return response.data;
+      let detail = JSON.parse(response.data.processed_text);
+      return { ...detail, id: imageUrl };
     } catch (error) {
       return rejectWithValue(error.response.data.error || error);
     }
@@ -17,13 +18,18 @@ export const extractDetails = createAsyncThunk(
 const detailsSlice = createSlice({
   name: 'details',
   initialState: {
-    details: [],
+    details: null,
     status: null,
     error: null,
+    openDetailModal: false,
   },
   reducers: {
-    addDetail: (state, action) => {
-      state.details.push(action.payload);
+    closeDetailModal: (state) => {
+      state.openDetailModal = false;
+    },
+    viewDetails: (state, payload) => {
+      state.details = payload.payload;
+      state.openDetailModal = true;
     },
   },
   extraReducers: (builder) => {
@@ -33,16 +39,17 @@ const detailsSlice = createSlice({
       })
       .addCase(extractDetails.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        console.log();
         state.details = action.payload;
+        state.isThereDetails = true;
+        state.openDetailModal = true;
       })
       .addCase(extractDetails.rejected, (state, action) => {
         state.status = 'failed';
-
+        state.isThereDetails = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { addDetail } = detailsSlice.actions;
+export const { closeDetailModal, viewDetails } = detailsSlice.actions;
 export default detailsSlice.reducer;

@@ -1,13 +1,13 @@
 import { useSelector } from 'react-redux';
+import calculateNetWeight from '../lib/calculateNetWeight';
 
-function DetailsTable() {
+function Details() {
   const details = useSelector((state) => state.details.details);
-  const status = useSelector((state) => state.details.status);
-  let detail = details.processed_text ? JSON.parse(details.processed_text) : {};
-  if (status !== 'succeeded') return <></>;
+
+  const netWeight = calculateNetWeight(details);
 
   return (
-    <div className='mt-8'>
+    <>
       <h2 className='text-xl font-bold mb-4'>Extracted Details Table</h2>
       <table>
         <tbody>
@@ -15,60 +15,65 @@ function DetailsTable() {
             <td>
               <strong>Date:</strong>
             </td>
-            <td>{detail.Date}</td>
+            <td>{details.Date}</td>
           </tr>
           <tr>
             <td>
               <strong>Time:</strong>
             </td>
-            <td>{detail.Time}</td>
+            <td>
+              {typeof details.Time === 'string'
+                ? details.Time
+                : JSON.stringify(details.Time)}
+            </td>
           </tr>
           <tr>
             <td>
               <strong>Ticket Number:</strong>
             </td>
-            <td>{detail['Ticket Number']}</td>
+            <td>{details['Ticket Number']}</td>
           </tr>
           <tr>
             <td>
               <strong>Issuing Company:</strong>
             </td>
-            <td>{detail['Issuing Company']}</td>
+            <td>{details['Issuing Company']}</td>
           </tr>
           <tr>
             <td>
               <strong>Truck Number:</strong>
             </td>
-            <td>{detail['Truck Number'] || 'N/A'}</td>
+            <td>{details['Truck Number'] || 'NaN'}</td>
           </tr>
           <tr>
             <td>
               <strong>Waste Name:</strong>
             </td>
-            <td>{detail['Waste Name']}</td>
+            <td>{details['Waste Name']}</td>
           </tr>
           <tr>
             <td>
               <strong>Gross Weight:</strong>
             </td>
-            <td>{detail['Gross Weight'] || 'N/A'}</td>
+            <td>{details['Gross Weight'] || 'NaN'}</td>
           </tr>
           <tr>
             <td>
               <strong>Tare Weight:</strong>
             </td>
-            <td>{detail['Tare Weight'] || 'N/A'}</td>
+            <td>{details['Tare Weight'] || 'NaN'}</td>
           </tr>
           <tr>
             <td>
               <strong>Net Weight:</strong>
             </td>
-            <td>{detail['Gross Weight'] - detail['Tare Weight'] || 'N/A'}</td>
+            <td>{netWeight}</td>
           </tr>
         </tbody>
       </table>
-    </div>
+      {details.id && <img className='w-full mt-5 h-48' src={details.id} />}
+    </>
   );
 }
 
-export default DetailsTable;
+export default Details;

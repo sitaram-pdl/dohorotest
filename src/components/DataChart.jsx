@@ -15,7 +15,7 @@ const normalizeData = (array) => {
 
     return {
       name: item['Waste Name'],
-      value: isNaN(netWeight) ? 2 : netWeight,
+      value: isNaN(netWeight) ? 0 : netWeight,
     };
   });
 };
